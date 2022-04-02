@@ -19,7 +19,7 @@ public class ChatogramClient extends JFrame {
     private JButton btLoginLogin;
     private JButton btRegisterReturn;
     private JButton btRegisterRegister;
-    private ClientSocket clientSocket = new ClientSocket();
+    private ClientSocket clientSocket;
 
 
     public ChatogramClient(){
@@ -33,11 +33,16 @@ public class ChatogramClient extends JFrame {
         this.setTitle("Chatogram");
         this.setResizable(false);
         this.setVisible(true);
+        this.clientSocket = new ClientSocket("localhost", 4999);
 
         this.btLoginLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                String[] message = {"login", tfLoginUsername.getText(), tfLoginPassword.getText()};
+                String[] response = clientSocket.sendMessage(message);
+                for(int i = 0; i < response.length; i++) {
+                    System.out.println(response[i]);
+                }
             }
         });
         this.btLoginRegister.addActionListener(new ActionListener() {

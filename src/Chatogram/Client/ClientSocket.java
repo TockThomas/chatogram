@@ -2,36 +2,30 @@ package Chatogram.Client;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-
-import static java.lang.System.in;
 
 public class ClientSocket {
     private Socket clientSocket;
-    private OutputStream outputStream;
-    private ObjectOutputStream objectOutputStream;
-    private InputStream inputStream;
-    private ObjectInputStream objectInputStream;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
 
-    public void startConnection(String pIp, int pPort) {
+    public ClientSocket (String pIp, int pPort) {
         try {
             this.clientSocket = new Socket(pIp, pPort);
-            this.outputStream = clientSocket.getOutputStream();
-            this.objectOutputStream = new ObjectOutputStream(outputStream);
-            this.inputStream = clientSocket.getInputStream();
-            this.objectInputStream = new ObjectInputStream(inputStream);
+            this.out = new ObjectOutputStream(this.clientSocket.getOutputStream());
+            this.in = new ObjectInputStream(this.clientSocket.getInputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public List<String> sendMessage(List<String> pMessages) {
-        List<String> response = new ArrayList<String>();
-        response.add(new String("Error"));
+    public String[] sendMessage(String[] pMessages) {
+        String[] response = {"error"};
         try {
-            objectOutputStream.writeObject(pMessages);
-            response = (List<String>) this.objectInputStream.readObject();
+            this.out.writeObject(pMessages);
+            this.out.flush();
+            response = (String[]) in.readObject();
+            System.out.println(response[0]);
+            return response;
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -40,11 +34,9 @@ public class ClientSocket {
 
     public void stopConnection() {
         try {
-            inputStream.close();
-            objectInputStream.close();
-            outputStream.close();
-            objectOutputStream.close();
             clientSocket.close();
+            out.close();
+            in.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -7,34 +7,59 @@ import java.net.Socket;
 public class HostSocket {
     private ServerSocket hostSocket;
     private Socket clientSocket;
-    private OutputStream outputStream;
-    private ObjectOutputStream objectOutputStream;
-    private InputStream inputStream;
-    private ObjectInputStream objectInputStream;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
 
-    public void start(int pPort) {
+    public HostSocket(int pPort) {
         try {
-            hostSocket = new ServerSocket(pPort);
-            clientSocket = hostSocket.accept();
-            inputStream = clientSocket.getInputStream();
-            objectInputStream = new ObjectInputStream(inputStream);
-            outputStream = clientSocket.getOutputStream();
-            objectOutputStream = new ObjectOutputStream(outputStream);
-
+            this.hostSocket = new ServerSocket(pPort);
+            this.clientSocket = this.hostSocket.accept();
+            this.out = new ObjectOutputStream(this.clientSocket.getOutputStream());
+            this.in = new ObjectInputStream(this.clientSocket.getInputStream());
         } catch (IOException e) {
-            System.out.println("Server failed");
             e.printStackTrace();
         }
     }
 
+    public String[] receiveMessage(){
+        try {
+            return (String[]) this.in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            String[] errorMessage = {"error"};
+            return errorMessage;
+        }
+    }
+
+    public void sendMessage(String[] pMessage) {
+        try {
+            this.out.writeObject(pMessage);
+            this.out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*public void start() {
+        try {
+            String[] message = {"Message from Client"};
+            while(true) {
+                System.out.println(this.in.readObject());
+                this.out.writeObject(message);
+                this.out.flush();
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Server failed");
+            e.printStackTrace();
+        }
+    }*/
+
     public void stop() {
         try {
-            inputStream.close();
-            objectInputStream.close();
-            outputStream.close();
-            objectOutputStream.close();
-            clientSocket.close();
-            hostSocket.close();
+            this.hostSocket.close();
+            this.clientSocket.close();
+            this.out.close();
+            this.in.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
