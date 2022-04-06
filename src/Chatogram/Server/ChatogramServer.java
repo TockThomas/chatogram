@@ -3,9 +3,12 @@ package Chatogram.Server;
 
 public class ChatogramServer {
     private HostSocket socket;
+    private Datenbank db;
 
     public ChatogramServer() {
-        socket = new HostSocket(4999);
+        db = new Datenbank();
+        db.createUser("TockThomas", "123");
+        /*socket = new HostSocket(4999);
         while(true){
             String[] message = socket.receiveMessage();
             if(message[0].equals("error")) {
@@ -13,7 +16,7 @@ public class ChatogramServer {
             } else if(message[0].equals("login")) {
                 this.login(message);
             }
-        }
+        }*/
     }
 
     private void login(String[] pMessage) {
