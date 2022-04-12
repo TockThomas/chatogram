@@ -40,20 +40,6 @@ public class HostSocket {
         }
     }
 
-    /*public void start() {
-        try {
-            String[] message = {"Message from Client"};
-            while(true) {
-                System.out.println(this.in.readObject());
-                this.out.writeObject(message);
-                this.out.flush();
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Server failed");
-            e.printStackTrace();
-        }
-    }*/
-
     public void stop() {
         try {
             this.hostSocket.close();

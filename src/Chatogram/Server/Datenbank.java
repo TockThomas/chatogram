@@ -4,33 +4,59 @@ import java.sql.*;
 
 public class Datenbank {
     private String databaseURL;
+    private Connection connection;
 
     public Datenbank() {
-        this. databaseURL = "jdbc:ucanaccess://C:/Users/thoma/Documents/Chatogram.accdb";
-    }
-
-    public void createUser(String pUsername, String pPassword) {
+        this.databaseURL = "jdbc:ucanaccess://C:/Users/thoma/Documents/Chatogram.accdb";
         try {
             Class.forName("net.ucanaccess.jdbc.UcanaccessDriver");
-            Connection connection = DriverManager.getConnection(databaseURL);
-            String sql = "INSERT INTO User (Username, Password) VALUES (?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, pUsername);
-            preparedStatement.setString(2, pPassword);
-            preparedStatement.executeUpdate();
+            this.connection = DriverManager.getConnection(this.databaseURL);
+        } catch(ClassNotFoundException | SQLException e){
+            e.printStackTrace();
+        }
+    }
 
-            sql = "SELECT * FROM User";
+    public boolean createUser(String pUsername, String pPassword) {
+        try {
+            String sql = "SELECT * FROM User WHERE Username=\"" + pUsername + "\"";
             Statement statement = connection.createStatement();
             ResultSet result = statement.executeQuery(sql);
-
-            while(result.next()) {
+            result.next();
+            try {
                 int id = result.getInt("ID");
-                String username = result.getString("Username");
-                String password = result.getString("Password");
-                System.out.println("Account created: " + id + ", " + username);
+                if(id >= 0) {
+                    System.out.println("Account " + pUsername + " exists, ID: " + id);
+                    return false;
+                }
+            } catch (SQLException e) {
+                sql = "INSERT INTO User (Username, Password) VALUES (?, ?)";
+                PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                preparedStatement.setString(1, pUsername);
+                preparedStatement.setString(2, pPassword);
+                preparedStatement.executeUpdate();
+                System.out.println("Account created: " + "pUsername");
+                return true;
             }
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace(); //TODO: debugging später ausschalten
+        }
+        return false;
+    }
+
+    public boolean loginUser(String pUsername, String pPassword) {
+        try {
+            String sql = "SELECT * FROM User WHERE Username=\"" + pUsername + "\"";
+            Statement statement = connection.createStatement();
+            ResultSet result = statement.executeQuery(sql);
+            result.next();
+            if(result.getString("Password").equals(pPassword)){
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); //TODO: später ausschalten
+            return false;
         }
     }
 }
