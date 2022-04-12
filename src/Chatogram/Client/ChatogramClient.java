@@ -61,8 +61,14 @@ public class ChatogramClient extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(!tfRegisterUsername.getText().equals("") && !tfRegisterPassword.getText().equals("") && tfRegisterPassword.getText().equals(tfRegisterConfirmPassword.getText())) {
-                    JOptionPane.showMessageDialog(null, "Account has been created!", "Register success", JOptionPane.PLAIN_MESSAGE);
-                    cardlayout.show(pnlMain, "Login");
+                    String[] message = {"register", tfRegisterUsername.getText(), tfRegisterPassword.getText()};
+                    String[] response = clientSocket.sendMessage(message);
+                    if(response[1].equals("success")) {
+                        JOptionPane.showMessageDialog(null, "Account has been created!", "Register success", JOptionPane.PLAIN_MESSAGE);
+                        cardlayout.show(pnlMain, "Login");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Username is taken", "Register failed", JOptionPane.ERROR_MESSAGE);
+                    }
                 } else {
                     if(tfRegisterUsername.getText().equals("")){
                         JOptionPane.showMessageDialog(null, "Username is missing!", "Register failed", JOptionPane.ERROR_MESSAGE);
