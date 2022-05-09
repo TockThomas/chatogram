@@ -17,6 +17,10 @@ public class ChatogramServer {
                 this.login(message);
             } else if(message[0].equals("register")) {
                 this.register(message);
+            } else if(message[0].equals("getChat")) {
+                this.getChat(message);
+            } else if(message[0].equals("getFriend")) {
+                this.getFriend(message);
             }
         }
     }
@@ -44,6 +48,22 @@ public class ChatogramServer {
         } else {
             message[1] = "failed";
         }
+        socket.sendMessage(message);
+    }
+
+    private void getChat(String[] pMessage) {
+        String username1 = pMessage[1];
+        String username2 = pMessage[2];
+        String[] message = new String[2];
+        message[0] = "getChat";
+        message[1] = db.getChat(username1, username2);
+        socket.sendMessage(message);
+    }
+
+    private void getFriend(String[] pMessage) {
+        String username = pMessage[1];
+        //message[0] = "getFriend" ist bereits in db.getFriends() vorhanden
+        String[] message = db.getFriend(username);
         socket.sendMessage(message);
     }
 }

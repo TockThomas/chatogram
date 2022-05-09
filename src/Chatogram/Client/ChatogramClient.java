@@ -1,6 +1,8 @@
 package Chatogram.Client;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,7 +21,18 @@ public class ChatogramClient extends JFrame {
     private JButton btLoginLogin;
     private JButton btRegisterReturn;
     private JButton btRegisterRegister;
+    private JPanel pnlChat;
+    private JButton btSendMessage;
+    private JTextField tfMessage;
+    private JScrollPane spChat;
+    private JLabel lbFriendName;
+    private JScrollPane spPeople;
+    private JButton btAddFriend;
+    private JLabel lbUsername;
+    private JList listFriends;
+    private JLabel lbChat;
     private ClientSocket clientSocket;
+    private User user;
 
 
     public ChatogramClient(){
@@ -40,8 +53,10 @@ public class ChatogramClient extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String[] message = {"login", tfLoginUsername.getText(), tfLoginPassword.getText()};
                 String[] response = clientSocket.sendMessage(message);
-                for(int i = 0; i < response.length; i++) {
-                    System.out.println(response[i]);
+                if(response[1].equals("success")) {
+                    startChatFrame(message[1]);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Give valid login credentials!", "Login failed", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -80,5 +95,48 @@ public class ChatogramClient extends JFrame {
                 }
             }
         });
+
+        this.btSendMessage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Chat chat = new Chat(user.getUsername(), user.getFriend(listFriends.getSelectedIndex()));
+                chat.writeMessage(tfMessage.getText());
+                refreshChat();
+            }
+        });
+
+        this.listFriends.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                refreshChat();
+            }
+        });
+    }
+
+    private void startChatFrame(String pUsername) {
+        this.setVisible(false);
+        this.setSize(1280, 720);
+        this.setLocationRelativeTo(null);
+        this.setResizable(true);
+        this.cardlayout.show(pnlMain, "Chat");
+        this.user = new User(pUsername);
+        this.getFriends();
+        this.lbUsername.setText(pUsername);
+        this.listFriends.setListData(this.user.getFriends());
+        this.setVisible(true);
+    }
+
+    private void refreshChat(){
+        Chat chat = new Chat(user.getUsername(), (String) listFriends.getSelectedValue());
+        String[] message = {"getChat", this.user.getUsername(), (String)this.listFriends.getSelectedValue()};
+        String[] response = clientSocket.sendMessage(message);
+        lbChat.setText(response[1]);
+    }
+
+    private void getFriends(){
+        String[] message = {"getFriend", this.user.getUsername()};
+        System.out.println("testfriend");
+        String[] response = clientSocket.sendMessage(message);
+        this.user.setFriend(response);
     }
 }

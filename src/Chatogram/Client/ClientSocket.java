@@ -24,7 +24,7 @@ public class ClientSocket {
             this.out.writeObject(pMessages);
             this.out.flush();
             response = (String[]) in.readObject();
-            System.out.println(response[0]);
+            System.out.println(response[0]); //TODO: später deaktivieren
             return response;
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
