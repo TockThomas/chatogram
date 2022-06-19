@@ -7,7 +7,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ChatogramClient extends JFrame {
+public class Interface extends JFrame {
     private CardLayout cardlayout = (CardLayout)this.pnlMain.getLayout();
     private JPanel pnlMain;
     private JPanel pnlLogin;
@@ -31,12 +31,13 @@ public class ChatogramClient extends JFrame {
     private JLabel lbUsername;
     private JList listFriends;
     private JLabel lbChat;
-    private ClientSocket clientSocket;
-    private User user;
+
+    private Control control;
 
 
-    public ChatogramClient(){
+    public Interface(){
         ImageIcon icon = new ImageIcon("src/Chatogram/Client/img/ChatogramIcon.png");
+        this.control = new Control();
         this.setIconImage(icon.getImage());
         this.setContentPane(this.pnlMain);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -46,15 +47,14 @@ public class ChatogramClient extends JFrame {
         this.setTitle("Chatogram");
         this.setResizable(false);
         this.setVisible(true);
-        this.clientSocket = new ClientSocket("localhost", 4999);
+
 
         this.btLoginLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String[] message = {"login", tfLoginUsername.getText(), tfLoginPassword.getText()};
-                String[] response = clientSocket.sendMessage(message);
-                if(response[1].equals("success")) {
-                    startChatFrame(message[1]);
+                String[] arr = control.login(tfLoginUsername.getText(), tfLoginPassword.getText());
+                if(arr[1].equals("success")) {
+                    startChatFrame(tfLoginUsername.getText());
                 } else {
                     JOptionPane.showMessageDialog(null, "Give valid login credentials!", "Login failed", JOptionPane.ERROR_MESSAGE);
                 }
@@ -76,9 +76,8 @@ public class ChatogramClient extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(!tfRegisterUsername.getText().equals("") && !tfRegisterPassword.getText().equals("") && tfRegisterPassword.getText().equals(tfRegisterConfirmPassword.getText())) {
-                    String[] message = {"register", tfRegisterUsername.getText(), tfRegisterPassword.getText()};
-                    String[] response = clientSocket.sendMessage(message);
-                    if(response[1].equals("success")) {
+                    String confirmation = control.register(tfRegisterUsername.getText(), tfRegisterPassword.getText());
+                    if(confirmation.equals("success")) {
                         JOptionPane.showMessageDialog(null, "Account has been created!", "Register success", JOptionPane.PLAIN_MESSAGE);
                         cardlayout.show(pnlMain, "Login");
                     } else {
@@ -99,8 +98,7 @@ public class ChatogramClient extends JFrame {
         this.btSendMessage.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Chat chat = new Chat(user.getUsername(), user.getFriend(listFriends.getSelectedIndex()));
-                chat.writeMessage(tfMessage.getText());
+                control.writeMessage((String)listFriends.getSelectedValue(),tfMessage.getText());
                 refreshChat();
             }
         });
@@ -108,7 +106,9 @@ public class ChatogramClient extends JFrame {
         this.listFriends.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                refreshChat();
+                if(e.getValueIsAdjusting()) {
+                    refreshChat();
+                }
             }
         });
     }
@@ -119,24 +119,14 @@ public class ChatogramClient extends JFrame {
         this.setLocationRelativeTo(null);
         this.setResizable(true);
         this.cardlayout.show(pnlMain, "Chat");
-        this.user = new User(pUsername);
-        this.getFriends();
         this.lbUsername.setText(pUsername);
-        this.listFriends.setListData(this.user.getFriends());
+        this.listFriends.setListData(this.control.getFriendsList());
         this.setVisible(true);
     }
 
     private void refreshChat(){
-        Chat chat = new Chat(user.getUsername(), (String) listFriends.getSelectedValue());
-        String[] message = {"getChat", this.user.getUsername(), (String)this.listFriends.getSelectedValue()};
-        String[] response = clientSocket.sendMessage(message);
-        lbChat.setText(response[1]);
+        String text = this.control.getChat((String)this.listFriends.getSelectedValue());
+        lbChat.setText(text);
     }
 
-    private void getFriends(){
-        String[] message = {"getFriend", this.user.getUsername()};
-        System.out.println("testfriend");
-        String[] response = clientSocket.sendMessage(message);
-        this.user.setFriend(response);
-    }
 }

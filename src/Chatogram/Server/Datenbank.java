@@ -61,7 +61,7 @@ public class Datenbank {
         }
     }
 
-    public String getUsername(int pUserId) {
+    private String getUsername(int pUserId) {
         try{
             String sql = "SELECT * FROM User WHERE Id=\"" + pUserId + "\"";
             Statement statement = connection.createStatement();
@@ -74,7 +74,7 @@ public class Datenbank {
         return "";
     }
 
-    public int getUserId(String pUsername) {
+    private int getUserId(String pUsername) {
         try{
             String sql = "SELECT * FROM User WHERE Username=\"" + pUsername + "\"";
             Statement statement = connection.createStatement();

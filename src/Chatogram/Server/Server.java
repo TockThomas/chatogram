@@ -1,11 +1,11 @@
 package Chatogram.Server;
 
 
-public class ChatogramServer {
+public class Server {
     private HostSocket socket;
     private Datenbank db;
 
-    public ChatogramServer() {
+    public Server() {
         System.out.println("Chatogram Server");
         db = new Datenbank();
         socket = new HostSocket(4999);
