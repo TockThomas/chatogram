@@ -1,11 +1,13 @@
 package Chatogram.Client;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ChatogramClient extends JFrame {
+public class Interface extends JFrame {
     private CardLayout cardlayout = (CardLayout)this.pnlMain.getLayout();
     private JPanel pnlMain;
     private JPanel pnlLogin;
@@ -19,11 +21,23 @@ public class ChatogramClient extends JFrame {
     private JButton btLoginLogin;
     private JButton btRegisterReturn;
     private JButton btRegisterRegister;
-    private ClientSocket clientSocket;
+    private JPanel pnlChat;
+    private JButton btSendMessage;
+    private JTextField tfMessage;
+    private JScrollPane spChat;
+    private JLabel lbFriendName;
+    private JScrollPane spPeople;
+    private JButton btAddFriend;
+    private JLabel lbUsername;
+    private JList listFriends;
+    private JLabel lbChat;
+
+    private Control control;
 
 
-    public ChatogramClient(){
+    public Interface(){
         ImageIcon icon = new ImageIcon("src/Chatogram/Client/img/ChatogramIcon.png");
+        this.control = new Control();
         this.setIconImage(icon.getImage());
         this.setContentPane(this.pnlMain);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -33,15 +47,16 @@ public class ChatogramClient extends JFrame {
         this.setTitle("Chatogram");
         this.setResizable(false);
         this.setVisible(true);
-        this.clientSocket = new ClientSocket("localhost", 4999);
+
 
         this.btLoginLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String[] message = {"login", tfLoginUsername.getText(), tfLoginPassword.getText()};
-                String[] response = clientSocket.sendMessage(message);
-                for(int i = 0; i < response.length; i++) {
-                    System.out.println(response[i]);
+                String[] arr = control.login(tfLoginUsername.getText(), tfLoginPassword.getText());
+                if(arr[1].equals("success")) {
+                    startChatFrame(tfLoginUsername.getText());
+                } else {
+                    JOptionPane.showMessageDialog(null, "Give valid login credentials!", "Login failed", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -61,9 +76,8 @@ public class ChatogramClient extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(!tfRegisterUsername.getText().equals("") && !tfRegisterPassword.getText().equals("") && tfRegisterPassword.getText().equals(tfRegisterConfirmPassword.getText())) {
-                    String[] message = {"register", tfRegisterUsername.getText(), tfRegisterPassword.getText()};
-                    String[] response = clientSocket.sendMessage(message);
-                    if(response[1].equals("success")) {
+                    String confirmation = control.register(tfRegisterUsername.getText(), tfRegisterPassword.getText());
+                    if(confirmation.equals("success")) {
                         JOptionPane.showMessageDialog(null, "Account has been created!", "Register success", JOptionPane.PLAIN_MESSAGE);
                         cardlayout.show(pnlMain, "Login");
                     } else {
@@ -80,5 +94,52 @@ public class ChatogramClient extends JFrame {
                 }
             }
         });
+
+        this.btAddFriend.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String friend = (String)JOptionPane.showInputDialog(null, "Enter username from your Friend", "Add Friend", JOptionPane.PLAIN_MESSAGE);
+                if(control.addFriend(friend)){
+                    JOptionPane.showMessageDialog(null, "Friend added", "Add Friend", JOptionPane.PLAIN_MESSAGE);
+                    listFriends.setListData(control.getFriendsList());
+                } else {
+                    JOptionPane.showMessageDialog(null, "Friend not found", "Add Friend", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        this.btSendMessage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                control.writeMessage((String)listFriends.getSelectedValue(),tfMessage.getText());
+                tfMessage.setText("");
+                refreshChat();
+            }
+        });
+
+        this.listFriends.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if(e.getValueIsAdjusting()) {
+                    refreshChat();
+                }
+            }
+        });
     }
+
+    private void startChatFrame(String pUsername) {
+        this.setVisible(false);
+        this.setSize(1280, 720);
+        this.setLocationRelativeTo(null);
+        this.setResizable(true);
+        this.cardlayout.show(pnlMain, "Chat");
+        this.lbUsername.setText(pUsername);
+        this.listFriends.setListData(this.control.getFriendsList());
+        this.setVisible(true);
+    }
+
+    private void refreshChat(){
+        String text = this.control.getChat((String)this.listFriends.getSelectedValue());
+        lbChat.setText(text);
+    }
+
 }

@@ -6,6 +6,6 @@ public class Program{
         //String[] message = {"Message from client"};
         //clientSocket.startConnection("localhost", 4999);
         //System.out.println((String[]) clientSocket.sendMessage(message));
-        ChatogramClient chatogramClient = new ChatogramClient();
+        Interface anInterface = new Interface();
     }
 }
