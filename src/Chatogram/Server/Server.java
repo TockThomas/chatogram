@@ -1,29 +1,35 @@
 package Chatogram.Server;
 
 
-public class Server {
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+
+public class Server extends Thread{
     private HostSocket socket;
     private Database db;
 
-    public Server() {
+    public Server(Socket pS, ObjectInputStream pOis, ObjectOutputStream pOos) {
         System.out.println("Chatogram Server");
-        db = new Database();
-        socket = new HostSocket(4999);
-        while(true){
-            String[] message = socket.receiveMessage();
-            if(message[0].equals("error")) {
-                System.out.println("Error, nothing received");
-            } else if(message[0].equals("login")) {
+        this.db = new Database();
+        this.socket = new HostSocket(pS, pOis, pOos);
+        while (true) {
+            String[] message = this.socket.receiveMessage();
+            if (message[0].equals("error")) {
+                System.out.println("Client disconnected: " + this.socket);
+                this.socket.stop();
+                break;
+            } else if (message[0].equals("login")) {
                 this.login(message);
-            } else if(message[0].equals("register")) {
+            } else if (message[0].equals("register")) {
                 this.register(message);
-            } else if(message[0].equals("getChat")) {
+            } else if (message[0].equals("getChat")) {
                 this.getChat(message);
-            } else if(message[0].equals("getFriend")) {
+            } else if (message[0].equals("getFriend")) {
                 this.getFriend(message);
-            } else if(message[0].equals("writeMessage")) {
+            } else if (message[0].equals("writeMessage")) {
                 this.writeMessage(message);
-            } else if(message[0].equals("addFriend")) {
+            } else if (message[0].equals("addFriend")) {
                 this.addFriend(message);
             }
         }
