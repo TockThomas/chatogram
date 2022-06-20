@@ -95,10 +95,23 @@ public class Interface extends JFrame {
             }
         });
 
+        this.btAddFriend.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String friend = (String)JOptionPane.showInputDialog(null, "Enter username from your Friend", "Add Friend", JOptionPane.PLAIN_MESSAGE);
+                if(control.addFriend(friend)){
+                    JOptionPane.showMessageDialog(null, "Friend added", "Add Friend", JOptionPane.PLAIN_MESSAGE);
+                    listFriends.setListData(control.getFriendsList());
+                } else {
+                    JOptionPane.showMessageDialog(null, "Friend not found", "Add Friend", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
         this.btSendMessage.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 control.writeMessage((String)listFriends.getSelectedValue(),tfMessage.getText());
+                tfMessage.setText("");
                 refreshChat();
             }
         });

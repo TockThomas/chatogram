@@ -3,11 +3,11 @@ package Chatogram.Server;
 
 public class Server {
     private HostSocket socket;
-    private Datenbank db;
+    private Database db;
 
     public Server() {
         System.out.println("Chatogram Server");
-        db = new Datenbank();
+        db = new Database();
         socket = new HostSocket(4999);
         while(true){
             String[] message = socket.receiveMessage();
@@ -21,6 +21,10 @@ public class Server {
                 this.getChat(message);
             } else if(message[0].equals("getFriend")) {
                 this.getFriend(message);
+            } else if(message[0].equals("writeMessage")) {
+                this.writeMessage(message);
+            } else if(message[0].equals("addFriend")) {
+                this.addFriend(message);
             }
         }
     }
@@ -30,7 +34,7 @@ public class Server {
         String password = pMessage[2];
         String[] message = new String[2];
         message[0] = "login";
-        if(db.loginUser(username, password)) {
+        if(this.db.loginUser(username, password)) {
             message[1] = "success";
         } else {
             message[1] = "failed";
@@ -43,7 +47,7 @@ public class Server {
         String password = pMessage[2];
         String[] message = new String[2];
         message[0] = "register";
-        if(db.createUser(username, password)){
+        if(this.db.createUser(username, password)){
             message[1] = "success";
         } else {
             message[1] = "failed";
@@ -56,14 +60,32 @@ public class Server {
         String username2 = pMessage[2];
         String[] message = new String[2];
         message[0] = "getChat";
-        message[1] = db.getChat(username1, username2);
+        message[1] = this.db.getChat(username1, username2);
         socket.sendMessage(message);
     }
 
     private void getFriend(String[] pMessage) {
         String username = pMessage[1];
         //message[0] = "getFriend" ist bereits in db.getFriends() vorhanden
-        String[] message = db.getFriend(username);
+        String[] message = this.db.getFriend(username);
+        socket.sendMessage(message);
+    }
+
+    private void writeMessage(String[] pMessage) {
+        String username = pMessage[1];
+        String friend = pMessage[2];
+        String text = pMessage[3];
+        this.db.writeMessage(username, friend, text);
+        String[] message = {"writeMessage", "success"};
+        socket.sendMessage(message);
+    }
+
+    private void addFriend(String[] pMessage) {
+        String username = pMessage[1];
+        String friend = pMessage[2];
+        String[] message = new String[2];
+        message[0] = "addFriend";
+        message[1] = this.db.addFriend(username, friend);
         socket.sendMessage(message);
     }
 }

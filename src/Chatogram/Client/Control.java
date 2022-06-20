@@ -1,13 +1,11 @@
 package Chatogram.Client;
 
 public class Control {
-    private int id;
     private String username;
     private String[] friendsList;
     private ClientSocket clientSocket;
 
     public Control(){
-        this.id = 0; //TODO: ändern
         this.clientSocket = new ClientSocket("localhost", 4999);
     }
 
@@ -41,6 +39,8 @@ public class Control {
             for(int i = 0; i < response.length - 1; i++) {
                 this.friendsList[i] = response[i+1];
             }
+        } else {
+            this.friendsList = new String[0];
         }
     }
 
@@ -49,6 +49,18 @@ public class Control {
     }
 
     public void writeMessage(String pFriend,String pMessage) {
-        //TODO: Server kontaktieren
+        String[] message = {"writeMessage", this.username, pFriend, pMessage};
+        clientSocket.sendMessage(message);  //Rückgabewert wird nicht gespeichert, ansonsten wartet er auf Antwort
+    }
+
+    public boolean addFriend(String pFriend){
+        String[] message = {"addFriend", this.username, pFriend};
+        String[] response = clientSocket.sendMessage(message);
+        if(response[1].equals("success")) {
+            this.fetchFriendsList();
+            return true;
+        } else {
+            return false;
+        }
     }
 }
