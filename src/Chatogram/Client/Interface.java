@@ -181,7 +181,7 @@ public class Interface extends JFrame {
         this.menuItemOptionLogOff.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                logOff();
+                logOut();
             }
         });
     }
@@ -209,7 +209,7 @@ public class Interface extends JFrame {
         lbChat.setText(text);
     }
 
-    private void logOff(){
+    private void logOut(){
         this.lbChat.setText("");
         this.listFriends.setSelectedIndex(-1);
         this.lbFriendName.setText("");
