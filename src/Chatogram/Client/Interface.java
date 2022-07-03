@@ -1,11 +1,11 @@
 package Chatogram.Client;
 
+import javax.accessibility.AccessibleIcon;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 
 public class Interface extends JFrame {
     private CardLayout cardlayout = (CardLayout)this.pnlMain.getLayout();
@@ -31,7 +31,10 @@ public class Interface extends JFrame {
     private JLabel lbUsername;
     private JList listFriends;
     private JLabel lbChat;
-
+    private JMenuBar menuBar;
+    private JMenu menuOption;
+    private JMenuItem menuItemOptionDeleteFriend;
+    private JMenuItem menuItemOptionLogOff;
     private Control control;
 
 
@@ -42,6 +45,14 @@ public class Interface extends JFrame {
         this.setContentPane(this.pnlMain);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.pack();
+        this.menuBar = new JMenuBar();
+        this.menuOption = new JMenu("Option");
+        this.menuBar.add(this.menuOption);
+        this.menuItemOptionDeleteFriend = new JMenuItem("Delete Friend");
+        this.menuItemOptionLogOff = new JMenuItem("Log off");
+        this.menuOption.add(this.menuItemOptionDeleteFriend);
+        this.menuOption.addSeparator();
+        this.menuOption.add(this.menuItemOptionLogOff);
         this.setSize(320,440);
         this.setLocationRelativeTo(null);
         this.setTitle("Chatogram");
@@ -99,8 +110,8 @@ public class Interface extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String friend = (String)JOptionPane.showInputDialog(null, "Enter username from your Friend", "Add Friend", JOptionPane.PLAIN_MESSAGE);
                 if(control.addFriend(friend)){
-                    JOptionPane.showMessageDialog(null, "Friend added", "Add Friend", JOptionPane.PLAIN_MESSAGE);
                     listFriends.setListData(control.getFriendsList());
+                    JOptionPane.showMessageDialog(null, "Friend added", "Add Friend", JOptionPane.PLAIN_MESSAGE);
                 } else {
                     JOptionPane.showMessageDialog(null, "Friend not found", "Add Friend", JOptionPane.ERROR_MESSAGE);
                 }
@@ -110,9 +121,32 @@ public class Interface extends JFrame {
         this.btSendMessage.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                control.writeMessage((String)listFriends.getSelectedValue(),tfMessage.getText());
-                tfMessage.setText("");
-                refreshChat();
+                if(!tfMessage.getText().equals("")) {
+                    control.writeMessage((String) listFriends.getSelectedValue(), tfMessage.getText());
+                    tfMessage.setText("");
+                    refreshChat();
+                }
+            }
+        });
+
+        this.tfMessage.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if(e.getKeyChar() == KeyEvent.VK_ENTER && !tfMessage.getText().equals("")) {
+                    control.writeMessage((String) listFriends.getSelectedValue(), tfMessage.getText());
+                    tfMessage.setText("");
+                    refreshChat();
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
             }
         });
 
@@ -120,8 +154,34 @@ public class Interface extends JFrame {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if(e.getValueIsAdjusting()) {
+                    lbFriendName.setText((String)listFriends.getSelectedValue());
                     refreshChat();
+                    btSendMessage.setEnabled(true);
+                    tfMessage.setEnabled(true);
+                    menuItemOptionDeleteFriend.setEnabled(true);
                 }
+            }
+        });
+
+        this.menuItemOptionDeleteFriend.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                control.deleteFriend((String)listFriends.getSelectedValue());
+                refreshFriends();
+                lbChat.setText("");
+                lbFriendName.setText("");
+                tfMessage.setText("");
+                btSendMessage.setEnabled(false);
+                tfMessage.setEnabled(false);
+                menuItemOptionDeleteFriend.setEnabled(false);
+                listFriends.setSelectedIndex(-1);
+            }
+        });
+
+        this.menuItemOptionLogOff.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                logOff();
             }
         });
     }
@@ -130,11 +190,18 @@ public class Interface extends JFrame {
         this.setVisible(false);
         this.setSize(1280, 720);
         this.setLocationRelativeTo(null);
-        this.setResizable(true);
         this.cardlayout.show(pnlMain, "Chat");
-        this.lbUsername.setText(pUsername);
-        this.listFriends.setListData(this.control.getFriendsList());
+        this.lbUsername.setText("Logged in as: " + pUsername);
+        this.refreshFriends();
+        this.setJMenuBar(menuBar);
+        this.btSendMessage.setEnabled(false);
+        this.tfMessage.setEnabled(false);
+        this.menuItemOptionDeleteFriend.setEnabled(false);
         this.setVisible(true);
+    }
+
+    private void refreshFriends(){
+        this.listFriends.setListData(this.control.getFriendsList());
     }
 
     private void refreshChat(){
@@ -142,4 +209,15 @@ public class Interface extends JFrame {
         lbChat.setText(text);
     }
 
+    private void logOff(){
+        this.lbChat.setText("");
+        this.listFriends.setSelectedIndex(-1);
+        this.lbFriendName.setText("");
+        this.tfLoginPassword.setText("");
+        this.control.changeUser();
+        this.setSize(320,440);
+        this.setLocationRelativeTo(null);
+        this.cardlayout.show(pnlMain, "Login");
+        this.setVisible(true);
+    }
 }

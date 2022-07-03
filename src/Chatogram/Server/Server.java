@@ -31,6 +31,8 @@ public class Server extends Thread{
                 this.writeMessage(message);
             } else if (message[0].equals("addFriend")) {
                 this.addFriend(message);
+            } else if (message[0].equals("deleteFriend")){
+                this.deleteFriend(message);
             }
         }
     }
@@ -92,6 +94,15 @@ public class Server extends Thread{
         String[] message = new String[2];
         message[0] = "addFriend";
         message[1] = this.db.addFriend(username, friend);
+        socket.sendMessage(message);
+    }
+
+    private void deleteFriend(String[] pMessage){
+        String username = pMessage[1];
+        String friend = pMessage[2];
+        String[] message = new String[1];
+        message[0] = "deleteFriend";
+        this.db.deleteFriend(username, friend);
         socket.sendMessage(message);
     }
 }
