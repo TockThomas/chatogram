@@ -14,7 +14,6 @@ public class Control {
         String[] response = this.clientSocket.sendMessage(message);
         if(response[1].equals("success")) {
             this.username = pUsername;
-            this.fetchFriendsList();
         }
         return response;
     }
@@ -45,6 +44,7 @@ public class Control {
     }
 
     public String[] getFriendsList() {
+        this.fetchFriendsList();
         return this.friendsList;
     }
 
@@ -62,5 +62,15 @@ public class Control {
         } else {
             return false;
         }
+    }
+
+    public void deleteFriend(String pFriend){
+        String[] message = {"deleteFriend", this.username, pFriend};
+        String[] response = clientSocket.sendMessage(message);
+    }
+
+    public void changeUser(){
+        this.username = null;
+        this.friendsList = null;
     }
 }

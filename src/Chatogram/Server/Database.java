@@ -184,4 +184,20 @@ public class Database {
         }
         return "failed";
     }
+
+    public void deleteFriend(String pUsername, String pFriend){
+        String username = pUsername;
+        String friend = pFriend;
+        int userId1 = this.getUserId(username);
+        int userId2 = this.getUserId(friend);
+        try{
+            String sql = "DELETE FROM Friend WHERE (UserId1=\"" + userId1 + "\" AND UserId2=\"" + userId2 + "\") OR (UserId1=\"" + userId2 + "\" AND UserId2=\"" + userId1 + "\")";
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(sql);
+            sql = "DELETE FROM Chat WHERE (UserId1=\"" + userId1 + "\" AND UserId2=\"" + userId2 + "\") OR (UserId1=\"" + userId2 + "\" AND UserId2=\"" + userId1 + "\")";
+            statement.executeUpdate(sql);
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
 }
